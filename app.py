@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import modelo
+import os
 
 app = Flask(__name__)
 
@@ -7,11 +8,12 @@ app = Flask(__name__)
 sintomas_disponibles = modelo.get_todos_sintomas()
 print(f"Cargando aplicación con {len(sintomas_disponibles)} síntomas disponibles")
 
+# Ruta principal que muestra el formulario
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html', sintomas=sintomas_disponibles)
 
-# Ruta para el diagnóstico por selección de síntomas
+# Ruta para diagnóstico con síntomas seleccionados
 @app.route('/diagnosticar', methods=['POST'])
 def diagnosticar():
     sintomas_seleccionados = request.form.getlist('sintomas')
@@ -35,9 +37,11 @@ def chatbot():
     if not mensaje_usuario:
         return jsonify({'respuesta': 'No he recibido ningún mensaje.'})
     
-    # Generar respuesta
+    # Generar respuesta del chatbot
     respuesta = modelo.generar_respuesta_chatbot(mensaje_usuario)
     return jsonify({'respuesta': respuesta})
 
+# Ejecutar la app
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
